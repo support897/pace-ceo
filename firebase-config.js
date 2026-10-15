@@ -7,6 +7,6 @@ window.PACE_FB_CONFIG = {
   authDomain: "pace-app-calendar.firebaseapp.com",
   projectId: "pace-app-calendar",
   appId: "1:1098367119523:web:f28ac449f0cc19368ecf16",
-  googleClientId: null,
+  googleClientId: "1098367119523-eoslu5p908audpsdjaghvb5i02jv6hfs.apps.googleusercontent.com",
   appleEnabled: false,
 };
