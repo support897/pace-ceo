@@ -59,6 +59,24 @@ check("reviews: 1 total, 1 unreplied, body renders", (await num("rTotal")) === "
 await p.click('[data-sec="app"]'); await p.waitForTimeout(300);
 check("app panel: 42 events brought in by 2 people", (await num("aEvents")) === "42" && (await num("aImporters")) === "2");
 check("no user email or name appears anywhere in the room", await p.evaluate(() => !/user@test|uid-user/.test(document.body.innerText)));
+// Live-caught legs (twin journey, 15 Oct): the door card must
+// be TRULY hidden once the room opens (computed style, not the
+// attribute — .door/.room are grid, which defeats [hidden]
+// without the CSS guard), and MRR must read $0.00 — a number —
+// when nobody is paying (a filtered SUM needs a composite index
+// Firestore lacks; MRR now computes from the list).
+const vis = await p.evaluate(() => {
+  const cs = (id) => getComputedStyle(document.getElementById(id)).display;
+  return { door: cs("door"), room: cs("room") };
+});
+check("door card is computed-hidden once the room is open", vis.door === "none" && vis.room !== "none");
+// Empty-subs town: a second mock with shards but NO aggSubs.
+mock.docs.delete("aggSubs/uid-user1"); mock.docs.delete("aggSubs/uid-user2"); mock.docs.delete("aggSubs/uid-user3");
+await p.reload({ waitUntil: "load" }); await p.waitForTimeout(600);
+const sess2 = await p.evaluate(() => !!localStorage.getItem("pace-auth-v1"));
+if (sess2) { await p.waitForFunction(() => document.getElementById("ovMoney").textContent !== "–", null, { timeout: 20000 }).catch(() => {}); await p.waitForTimeout(1200); }
+const mrr0 = await num("mMrr");
+check("MRR reads $0.00 (not a dash) when nobody is paying", sess2 && mrr0 === "$0.00");
 await b.close(); server.close(); mock.close();
 console.log("RESULT pass=" + pass + " fail=" + fail);
 process.exit(fail ? 1 : 0);
